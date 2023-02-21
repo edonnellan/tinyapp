@@ -15,10 +15,8 @@ const generateRandomString = () => {
 };
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
   const tinyUrl = generateRandomString();
   urlDatabase[tinyUrl] = req.body.longURL;
-  console.log("urlsDatabase: ", urlDatabase, "tinyUrl: ", tinyUrl);
   res.redirect(`/urls/${tinyUrl}`);
 });
 
@@ -33,7 +31,6 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
-  // console.log("id: ", req.params.id);
   res.redirect(longURL);
 });
 
