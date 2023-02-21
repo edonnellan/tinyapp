@@ -10,6 +10,10 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const generateRandomString = () => {
+  return Math.random().toString(32).slice(7);
+}
+
 app.post("/urls", (req, res) => {
   console.log(req.body);
   res.send("OK");
