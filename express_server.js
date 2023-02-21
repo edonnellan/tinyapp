@@ -1,3 +1,4 @@
+const { urlencoded } = require("express");
 const express = require("express");
 const app = express();
 const PORT = 8080; //default port 8080
@@ -17,6 +18,7 @@ const generateRandomString = () => {
 app.post("/urls", (req, res) => {
   const tinyUrl = generateRandomString();
   urlDatabase[tinyUrl] = req.body.longURL;
+  console.log(`A TinyUrl for ${urlDatabase[tinyUrl]} been created!`);
   res.redirect(`/urls/${tinyUrl}`);
 });
 
@@ -54,9 +56,11 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// app.post("/delete/", (req, res) => {
-
-// })
+app.post("/urls/:id/delete", (req, res) => {
+  console.log(`The tinyUrl for ${urlDatabase[req.params.id]} has been deleted!`);
+  delete urlDatabase[req.params.id];
+  res.redirect("/urls");
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
