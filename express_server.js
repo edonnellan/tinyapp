@@ -38,9 +38,9 @@ const generateRandomString = () => {
 app.get("/urls", (req, res) => {
   const templateVars = { 
     urls: urlDatabase,
-    user: req.cookies.userId
+    user: users[req.cookies.userId]
   };
-  console.log("user: ", templateVars);
+  console.log("user: ", templateVars.user);
   res.render("urls_index", templateVars);
 });
 
@@ -105,6 +105,7 @@ app.post("/register", (req, res) => {
     email: req.body.email,
     password: req.body.password
   };
+  console.log("userObj: ", users[generateUserId]);
   res.cookie("userId", generateUserId);
   // console.log("userId: ", userId, "userDatabase: ", users);
   res.redirect("/urls");
