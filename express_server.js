@@ -2,9 +2,12 @@ const { urlencoded } = require("express");
 const express = require("express");
 const app = express();
 const PORT = 8080; //default port 8080
+const cookieParser = require("cookie-parser");
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
 
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
@@ -15,21 +18,21 @@ const generateRandomString = () => {
   return Math.random().toString(36).slice(7);
 };
 
-app.post("/urls", (req, res) => {
-  const tinyUrl = generateRandomString();
-  urlDatabase[tinyUrl] = req.body.longURL;
-  console.log("databaseADD: ", urlDatabase);
-  console.log(`A TinyUrl for ${urlDatabase[tinyUrl]} been created!`);
-  res.redirect(`/urls/${tinyUrl}`);
-});
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { 
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"],
+  };
+  console.log("templateVars: ",templateVars);
+  res.render("urls_new", templateVars);
 });
 
 app.get("/u/:id", (req, res) => {
@@ -39,6 +42,7 @@ app.get("/u/:id", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
+    username: req.cookies["username"],
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
   };
@@ -57,14 +61,17 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.post("/login", (req, res) => {
-  res.cookie("username", req.body);
-  console.log("username: ", req.body.username);
-  res.redirect("/urls");
+app.post("/urls", (req, res) => {
+  const tinyUrl = generateRandomString();
+  urlDatabase[tinyUrl] = req.body.longURL;
+  console.log("databaseADD: ", urlDatabase);
+  console.log(`A TinyUrl for ${urlDatabase[tinyUrl]} been created!`);
+  res.redirect(`/urls/${tinyUrl}`);
 });
 
-app.post("/urls", (req, res) => {
-  res.redirect("urls/:id");
+app.post("/login", (req, res) => {
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
 });
 
 app.post("/urls/:id", (req, res) => {
