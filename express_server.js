@@ -61,6 +61,10 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+app.get("/register", (req, res) => {
+  res.render("urls_register");
+});
+
 app.post("/urls", (req, res) => {
   const tinyUrl = generateRandomString();
   urlDatabase[tinyUrl] = req.body.longURL;

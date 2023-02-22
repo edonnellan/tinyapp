@@ -18,13 +18,13 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
           </div>
       </div>
-      <% if(username){ %>
+      <% if(username){ %> <!--If user is logged in then show their name in the header and a logout button-->
         <h5>Signed in as:</h5>
         <h2> <%= username %></h2> 
         <form class="form-centre" action="/logout" method="POST">
             <button type="submit" class="btn btn-dark btn-sm">Logout</button>
         </form>
-      <% } else{ %>  
+      <% } else{ %>  <!--If user is NOT logged in then show login form in the header-->
         <form class="form-centre" action="/login" method="POST">
           <div class="form-group mb-2">
             <label style="margin: 1em;" for="username">Username:</label>
