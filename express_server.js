@@ -57,8 +57,12 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+app.post("/urls", (req, res) => {
+  res.redirect("urls/:id");
+});
+
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body;
+  urlDatabase[req.params.id] = req.body.longURL;
   res.redirect("/urls");
 });
 
