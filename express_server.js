@@ -79,6 +79,7 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/urls/:id", (req, res) => {
+  console.log(`Updated LongURL: ${req.body.longURL}`)
   urlDatabase[req.params.id] = req.body.longURL;
   res.redirect("/urls");
 });
