@@ -18,19 +18,28 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
           </div>
       </div>
-      <h2><%= username %></h2>
-      <form class="form-centre" action="/login" method="POST">
-        <div class="form-group mb-2">
-          <label style="margin: 1em;" for="username">Username:</label>
-          <input
-            class="form-centre"
-            type="text"
-            name="username"
-            placeholder="Type new username here..."
-            style="width: 300px; margin: 1em"
-          />
-          <button type="submit" class="btn btn-light">Sign In</button>
-    </div>
-  </form>
+      <% if(username){ %>
+        <h5>Signed in as:</h5>
+        <h2> <%= username %></h2> 
+        <form class="form-centre" action="/logout" method="POST">
+          <div class="form-group mb-2">
+            <button type="submit" class="btn btn-dark btn-sm">Logout</button>
+          </div>
+        </form>
+      <% } else{ %>  
+        <form class="form-centre" action="/login" method="POST">
+          <div class="form-group mb-2">
+            <label style="margin: 1em;" for="username">Username:</label>
+            <input
+              class="form-centre"
+              type="text"
+              name="username"
+              placeholder="Type new username here..."
+              style="width: 300px; margin: 1em"
+            />
+            <button type="submit" class="btn btn-light">Sign In</button>
+      </div>
+    </form>
+     <% } %>
   </nav>
 </header>

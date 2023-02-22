@@ -64,13 +64,17 @@ app.get("/urls.json", (req, res) => {
 app.post("/urls", (req, res) => {
   const tinyUrl = generateRandomString();
   urlDatabase[tinyUrl] = req.body.longURL;
-  console.log("databaseADD: ", urlDatabase);
   console.log(`A TinyUrl for ${urlDatabase[tinyUrl]} been created!`);
   res.redirect(`/urls/${tinyUrl}`);
 });
 
 app.post("/login", (req, res) => {
   res.cookie("username", req.body.username);
+  res.redirect("/urls");
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
   res.redirect("/urls");
 });
 
@@ -82,7 +86,6 @@ app.post("/urls/:id", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
   console.log(`The tinyUrl for ${urlDatabase[req.params.id]} has been deleted!`);
   delete urlDatabase[req.params.id];
-  console.log("databaseDELETE: ", urlDatabase);
   res.redirect("/urls");
 });
 
