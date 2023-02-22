@@ -57,6 +57,12 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+app.post("/login", (req, res) => {
+  res.cookie("username", req.body);
+  console.log("username: ", req.body.username);
+  res.redirect("/urls");
+});
+
 app.post("/urls", (req, res) => {
   res.redirect("urls/:id");
 });
