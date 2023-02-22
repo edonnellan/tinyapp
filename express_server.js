@@ -4,14 +4,30 @@ const app = express();
 const PORT = 8080; //default port 8080
 const cookieParser = require("cookie-parser");
 
+//Setting ejs engine with view folder
 app.set("view engine", "ejs");
+
+//Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-
+//Database objects
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
+};
+
+const users = {
+  userRandomID: {
+    id: "userRandomID",
+    email: "sally@hmail.com",
+    password: "purple-monkey-dinosaur",
+  },
+  user2RandomID: {
+    id: "user2RandomID",
+    email: "bob@hmail.com",
+    password: "dishwasher-funk",
+  },
 };
 
 const generateRandomString = () => {
