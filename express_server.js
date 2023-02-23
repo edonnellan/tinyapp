@@ -18,6 +18,8 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com",
 };
 
+console.log("urlDB: ", urlDatabase);
+
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -60,6 +62,10 @@ app.get("/urls", (req, res) => {
 
 //Creates the tinyURL
 app.post("/urls", (req, res) => {
+  const userId = req.cookies.userId;
+  if (!users[userId]) {
+      return res.send("<html><body>Please register and login to access the tinyURL machine!\n<b>Thank you!</b></body></html>\n");
+    };
   const tinyUrl = generateRandomString();
   urlDatabase[tinyUrl] = req.body.longURL;
   console.log(`A TinyUrl for ${urlDatabase[tinyUrl]} been created!`);
@@ -72,7 +78,11 @@ app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[userId],
   };
-  console.log("templateVars: ",templateVars);
+
+  //If user is not logged in they can't make tinyURL...So they get redirected to /login.
+  if (!users[userId]) {
+    return res.redirect("/login");
+  }
   res.render("urls_new", templateVars);
 });
 
