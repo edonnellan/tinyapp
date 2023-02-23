@@ -11,6 +11,7 @@ app.set("view engine", "ejs");
 //Middleware
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(morgan("dev"));
 
 //Database objects
 const urlDatabase = {
@@ -58,15 +59,41 @@ const findUserFromEmail = (emailAddress) => {
   return null;
 };
 
+const urlsForUser = (currentUserId) => {
+  let userUrls = [];
+
+  for (let tinyURL in urlDatabase) {
+    const userIDsInSystem = urlDatabase[tinyURL].userID;
+    if (currentUserId === userIDsInSystem) {
+      userUrls.push({
+        shortURL: tinyURL,
+        longURL: urlDatabase[tinyURL].longURL
+      });
+    }
+  }
+  console.log("userURLS: ", userUrls);
+  return userUrls;
+};
+
 
 //Main /urls page. URL list
 app.get("/urls", (req, res) => {
   const userId = req.cookies.userId;
+  console.log("URLS for userId: ", urlsForUser(userId));
+
+  if (!userId) {
+    return res.status(401).send("<html><body>You must register and be logged in to see the TinyURLs in all their glory!\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
+  }
+
+  if (!urlsForUser(userId)) {
+    return res.status(401).send("<html><body>You must register and be logged in to see the TinyURLs in all their glory!\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
+  }
+
   const templateVars = { 
-    urls: urlDatabase,
+    urls: urlsForUser(userId),
     user: users[userId]
   };
-  console.log("userId: ", urlDatabase);
+  console.log("templateVarUSER: ", templateVars.urls);
   res.render("urls_index", templateVars);
 });
 
@@ -118,6 +145,8 @@ app.get("/urls/:id", (req, res) => {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
   };
+  console.log("templateVar.longURL: ", templateVars.longURL);
+  // console.log("LONGURL FIX: ", urlDatabase[req.params.id].longURL, "id: ", req.params.id);
   res.render("urls_show", templateVars);
 });
 
@@ -231,6 +260,7 @@ app.post("/urls/:id", (req, res) => {
 //Delete a URL
 app.post("/urls/:id/delete", (req, res) => {
   console.log(`The tinyURL for ${urlDatabase[req.params.id]} has been deleted!`);
+  console.log("ID NOW: ", urlDatabase[req.params.id]);
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });

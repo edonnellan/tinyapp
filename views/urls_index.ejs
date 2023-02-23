@@ -30,12 +30,12 @@
           </tr>
         </thead>
         <tbody>
-          <% for (let id in urls) { %>
+          <% for (let id of urls) { %>
             <tr>
-              <td><%= id %></td>
-              <td><%= urls[id].longURL %>
-              <td><a href="/urls/<%= id %>"><button class="btn btn-outline-primary">Edit</button></td>
-              <td><form method="POST" action="/urls/<%= id %>/delete"><div><button type="submit" class="btn btn btn-outline-danger">Delete</button></div></form></td>
+              <td><%= id.shortURL %></td>
+              <td><%= id.longURL %>
+              <td><a href="/urls/<%= id.shortURL %>"><button class="btn btn-outline-primary">Edit</button></td>
+              <td><form method="POST" action="/urls/<%= id.shortURL %>/delete"><div><button type="submit" class="btn btn btn-outline-danger">Delete</button></div></form></td>
               </td>
             </tr>
           <% } %>
