@@ -18,26 +18,11 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
           </div>
       </div>
-      <% if(user.email){ %> <!--If user is logged in then show their email in the header and a logout button-->
-        <h5>Signed in as:</h5>
-        <h4><%= user.email %></h4>
-        <form class="form-centre" action="/logout" method="POST">
-            <button type="submit" class="btn btn-dark btn-sm">Logout</button>
-        </form>
-      <% } else{ %>  <!--If user is NOT logged in then show login form in the header-->
-        <form class="form-centre" action="/login" method="POST">
-          <div class="form-group mb-2">
-            <label style="margin: 1em;" for="email">email:</label>
-            <input
-              class="form-centre"
-              type="text"
-              name="email"
-              placeholder="Type new email here..."
-              style="width: 300px; margin: 1em"
-            />
-            <button type="submit" class="btn btn-light">Sign In</button>
-      </div>
-    </form>
-     <% } %>
+      <% if(user.email){%>
+        <a href="/logout"><button type="submit" class="btn btn-dark btn-sm">Logout</button></a>
+      <%} else{%>
+        <a href="/register"><button type="submit" class="btn btn-light btn-sm">Register</button></a>
+        <a href="/login"><button type="submit" class="btn btn-light btn-sm">Login</button></a>
+      <%}%>
   </nav>
 </header>
