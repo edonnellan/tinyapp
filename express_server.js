@@ -30,9 +30,21 @@ const users = {
   },
 };
 
+//HELPER FUNCTIONS
 const generateRandomString = () => {
   return Math.random().toString(36).slice(7);
 };
+
+const findUserFromEmail = (emailAddress) => {
+  for (let user in users) {
+    if (users[user].email === emailAddress) {
+      console.log("users: ", users);
+      return users[user];
+    }
+  }
+  return null;
+};
+
 
 //Main /urls page. URL list
 app.get("/urls", (req, res) => {
@@ -97,19 +109,34 @@ app.get("/register", (req, res) => {
   res.render("urls_register");
 });
 
-//When a user registers --- They get a unique ID and their details are stored in the users DB
+//When a user registers -- We check they've inputted an email & password and that the email doesn't already exist in our database before accepting.
 app.post("/register", (req, res) => {
+  //1. Checking the email or password are empty or not?
+  if (!req.body.email || !req.body.password) {
+    return res.status(400).send("Please provide email AND Password. It can't be blank!");
+  };
+
+  //2. Checking whether the email has been registered already or not?
+  const searchUsersDatabase = findUserFromEmail(req.body.email);
+  console.log("searchUsersDatabase: ", searchUsersDatabase, "req.body.email: ", req.body.email);
+  if (searchUsersDatabase) {
+    return res.status(400).send("The email has already been taken. Please try it with another one!");
+  };
+
+  //3. Every condition checked. Happy Path;
   const generateUserId = generateRandomString();
   users[generateUserId] = {
     id: generateUserId,
     email: req.body.email,
     password: req.body.password
   };
+  
   console.log("userObj: ", users[generateUserId]);
   res.cookie("userId", generateUserId);
-  // console.log("userId: ", userId, "userDatabase: ", users);
+  console.log("userDatabase: ", users);
   res.redirect("/urls");
 });
+
 
 //Logins
 app.post("/login", (req, res) => {
