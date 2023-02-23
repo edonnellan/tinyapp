@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080; //default port 8080
 const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
 
 //Setting ejs engine with view folder
 app.set("view engine", "ejs");
@@ -163,6 +164,7 @@ app.post("/login", (req, res) => {
     
   //1. Checks if the iput email exists in users database or not?
   const searchUsersDatabase = findUserFromEmail(req.body.email);
+  console.log("searchUserDB:", searchUsersDatabase);
   if (searchUsersDatabase === null) {
     return res.status(403).send("Email is not registered. Please register first and then login.");
   }
@@ -173,7 +175,7 @@ app.post("/login", (req, res) => {
   }
 
   //3. HappyPath -- If all was well then store the usersId in the userId Cookie and redirect to /urls.
-  res.cookie("userId", req.cookies.userId);
+  res.cookie("userId", searchUsersDatabase.id);
   res.redirect("/urls");
 });
 
