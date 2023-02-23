@@ -38,7 +38,7 @@ const generateRandomString = () => {
 const findUserFromEmail = (emailAddress) => {
   for (let user in users) {
     if (users[user].email === emailAddress) {
-      console.log("users: ", users);
+      // console.log("users: ", users);
       return users[user];
     }
   }
@@ -131,23 +131,37 @@ app.post("/register", (req, res) => {
     password: req.body.password
   };
   
-  console.log("userObj: ", users[generateUserId]);
+  // console.log("userObj: ", users[generateUserId]);
   res.cookie("userId", generateUserId);
-  console.log("userDatabase: ", users);
+  // console.log("userDatabase: ", users);
   res.redirect("/urls");
 });
 
 
-//Logins
+//LOGIN ROUTES
+
+//Renders /login
 app.get("/login", (req, res) => {
   res.render("urls_login")
 });
 
+//Login Funtionality
+app.post("/login", (req, res) => {
+  //1. Checks if the iput email exists in users database or not?
+  const searchUsersDatabase = findUserFromEmail(req.body.email);
+  if (searchUsersDatabase === null) {
+    return res.status(403).send("Email is not registered. Please register first and then login.");
+  }
+  //2. Check if the existing userId's passwords matches the input password or not?
+  if (searchUsersDatabase.password !== req.body.password) {
+  // console.log("searchUsersDatabase.password: ", searchUsersDatabase.password, "req.body.password: ",req.body.password);
+    return res.status(403).send("Passwords are not a match. Please check your password and try again.");
+  }
 
-// app.post("/login", (req, res) => {
-//   res.cookie("user", req.cookies.userId);
-//   res.redirect("/urls");
-// });
+  //3. HappyPath -- If all was well then store the usersId in the userId Cookie and redirect to /urls.
+  res.cookie("userId", req.cookies.userId);
+  res.redirect("/urls");
+});
 
 //Logouts
 app.post("/logout", (req, res) => {
