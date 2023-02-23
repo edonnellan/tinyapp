@@ -18,11 +18,15 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
           </div>
       </div>
-      <% if(user.email){%>
+      <% if(user && user.email){%>
+        <h5>Signed in as:</h5>
+        <h4><%= user.email %></h4>
+        <form class="form-centre" action="/logout" method="POST">
         <a href="/logout"><button type="submit" class="btn btn-dark btn-sm">Logout</button></a>
+      </form>
       <%} else{%>
-        <a href="/register"><button type="submit" class="btn btn-light btn-sm">Register</button></a>
-        <a href="/login"><button type="submit" class="btn btn-light btn-sm">Login</button></a>
+        <a href="/register"><button type="submit" class="btn btn-link">Register</button></a>
+        <a href="/login"><button type="submit" class="btn btn-link">Login</button></a>
       <%}%>
   </nav>
 </header>

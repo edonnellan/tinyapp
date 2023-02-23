@@ -48,11 +48,12 @@ const findUserFromEmail = (emailAddress) => {
 
 //Main /urls page. URL list
 app.get("/urls", (req, res) => {
+  const userId = req.cookies.userId;
   const templateVars = { 
     urls: urlDatabase,
-    user: users[req.cookies.userId]
+    user: users[userId]
   };
-  console.log("user: ", templateVars.user);
+  // console.log("user: ", templateVars.user);
   res.render("urls_index", templateVars);
 });
 
@@ -66,8 +67,9 @@ app.post("/urls", (req, res) => {
 
 //Renders urls/new page when a new tinyURL has been created
 app.get("/urls/new", (req, res) => {
+  const userId = req.cookies.userId;
   const templateVars = {
-    user: req.cookies.userId,
+    user: users[userId],
   };
   console.log("templateVars: ",templateVars);
   res.render("urls_new", templateVars);
@@ -81,8 +83,10 @@ app.get("/u/:id", (req, res) => {
 
 //Renders page post tinyURL conversion
 app.get("/urls/:id", (req, res) => {
+  const userId = req.cookies.userId;
+
   const templateVars = {
-    user: req.cookies.userId,
+    user: users[userId],
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
   };
@@ -106,11 +110,16 @@ app.get("/urls.json", (req, res) => {
 
 //Renders register page
 app.get("/register", (req, res) => {
-  res.render("urls_register");
+  const userId = req.cookies.userId;
+  const templateVars = {
+    user: users[userId]
+   };
+  res.render("urls_register", templateVars);
 });
 
 //When a user registers -- We check they've inputted an email & password and that the email doesn't already exist in our database before accepting.
 app.post("/register", (req, res) => {
+   
   //1. Checking the email or password are empty or not?
   if (!req.body.email || !req.body.password) {
     return res.status(400).send("Please provide email AND Password. It can't be blank!");
@@ -118,7 +127,7 @@ app.post("/register", (req, res) => {
 
   //2. Checking whether the email has been registered already or not?
   const searchUsersDatabase = findUserFromEmail(req.body.email);
-  console.log("searchUsersDatabase: ", searchUsersDatabase, "req.body.email: ", req.body.email);
+  // console.log("searchUsersDatabase: ", searchUsersDatabase, "req.body.email: ", req.body.email);
   if (searchUsersDatabase) {
     return res.status(400).send("The email has already been taken. Please try it with another one!");
   };
@@ -142,11 +151,16 @@ app.post("/register", (req, res) => {
 
 //Renders /login
 app.get("/login", (req, res) => {
-  res.render("urls_login")
+  const userId = req.cookies.userId;
+  const templateVars = {
+    user: users[userId]
+   }
+  res.render("urls_login", templateVars)
 });
 
 //Login Funtionality
 app.post("/login", (req, res) => {
+    
   //1. Checks if the iput email exists in users database or not?
   const searchUsersDatabase = findUserFromEmail(req.body.email);
   if (searchUsersDatabase === null) {
@@ -163,10 +177,10 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
-//Logouts
+//LOGOUT
 app.post("/logout", (req, res) => {
-  res.clearCookie("req.cookies.userId");
-  res.redirect("/urls");
+  res.clearCookie("userId", req.cookies.userId);
+  res.redirect("/login");
 });
 
 //Edit the longURL of an existing TinyURL conversion
