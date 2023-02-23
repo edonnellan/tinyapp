@@ -139,10 +139,15 @@ app.post("/register", (req, res) => {
 
 
 //Logins
-app.post("/login", (req, res) => {
-  res.cookie("user", req.cookies.userId);
-  res.redirect("/urls");
+app.get("/login", (req, res) => {
+  res.render("urls_login")
 });
+
+
+// app.post("/login", (req, res) => {
+//   res.cookie("user", req.cookies.userId);
+//   res.redirect("/urls");
+// });
 
 //Logouts
 app.post("/logout", (req, res) => {
