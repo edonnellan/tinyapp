@@ -89,6 +89,10 @@ app.get("/urls/new", (req, res) => {
 //TinyURL at work -- Redirects TinyURL to the OG longURL
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id];
+  //if the TinyURL doesn't exist- error code & HTML prompted with message
+  if (!longURL) {
+    return res.status(404).send("<html><body>TinyURL not found. Maybe you could make it? Register and try!</body></html>\n");
+  }
   res.redirect(longURL);
 });
 
