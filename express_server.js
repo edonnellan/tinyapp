@@ -14,9 +14,19 @@ app.use(cookieParser());
 
 //Database objects
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
+// const urlDatabase = {
+//   b2xVn2: "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com",
+// };
 
 console.log("urlDB: ", urlDatabase);
 
@@ -66,10 +76,10 @@ app.post("/urls", (req, res) => {
   if (!users[userId]) {
       return res.send("<html><body>Please register and login to access the tinyURL machine!\n<b>Thank you!</b></body></html>\n");
     };
-  const tinyUrl = generateRandomString();
-  urlDatabase[tinyUrl] = req.body.longURL;
-  console.log(`A TinyUrl for ${urlDatabase[tinyUrl]} been created!`);
-  res.redirect(`/urls/${tinyUrl}`);
+  const tinyURL = generateRandomString();
+  urlDatabase[tinyURL].longURL = req.body.longURL;
+  console.log(`A tinyURL for ${urlDatabase[tinyURL].longURL} been created!`);
+  res.redirect(`/urls/${tinyURL}`);
 });
 
 //Renders urls/new page when a new tinyURL has been created
@@ -88,7 +98,7 @@ app.get("/urls/new", (req, res) => {
 
 //TinyURL at work -- Redirects TinyURL to the OG longURL
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
+  const longURL = urlDatabase[req.params.id].longURL;
   //if the TinyURL doesn't exist- error code & HTML prompted with message
   if (!longURL) {
     return res.status(404).send("<html><body>TinyURL not found. Maybe you could make it? Register and try!</body></html>\n");
@@ -103,7 +113,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     user: users[userId],
     id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id].longURL,
   };
   res.render("urls_show", templateVars);
 });
@@ -211,13 +221,13 @@ app.post("/logout", (req, res) => {
 //Edit the longURL of an existing TinyURL conversion
 app.post("/urls/:id", (req, res) => {
   console.log(`Updated LongURL: ${req.body.longURL}`)
-  urlDatabase[req.params.id] = req.body.longURL;
+  urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
 //Delete a URL
 app.post("/urls/:id/delete", (req, res) => {
-  console.log(`The tinyUrl for ${urlDatabase[req.params.id]} has been deleted!`);
+  console.log(`The tinyURL for ${urlDatabase[req.params.id]} has been deleted!`);
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
