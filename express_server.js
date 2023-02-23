@@ -66,7 +66,7 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     user: users[userId]
   };
-  // console.log("user: ", templateVars.user);
+  console.log("userId: ", urlDatabase);
   res.render("urls_index", templateVars);
 });
 
@@ -77,7 +77,10 @@ app.post("/urls", (req, res) => {
       return res.send("<html><body>Please register and login to access the tinyURL machine!\n<b>Thank you!</b></body></html>\n");
     };
   const tinyURL = generateRandomString();
+  urlDatabase[tinyURL] = {};
   urlDatabase[tinyURL].longURL = req.body.longURL;
+  urlDatabase[tinyURL].userID = userId;
+  console.log("urlDB AFter adding url: ", urlDatabase[tinyURL]);
   console.log(`A tinyURL for ${urlDatabase[tinyURL].longURL} been created!`);
   res.redirect(`/urls/${tinyURL}`);
 });
