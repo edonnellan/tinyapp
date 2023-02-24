@@ -47,7 +47,7 @@ const users = {
   },
 };
 
-//HELPER FUNCTIONS
+// //HELPER FUNCTIONS
 const generateRandomString = () => {
   return Math.random().toString(36).slice(7);
 };

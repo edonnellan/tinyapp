@@ -15,7 +15,8 @@ const testUsers = {
   }
 };
 
-describe('getUserByEmail', function() {
+//findUserFromEmail function tests
+describe('findUserFromEmail', function() {
   it('should return a user with valid email', function() {
     const user = findUserFromEmail("user@example.com", testUsers)
     const expectedUserID = "userRandomID";
@@ -26,6 +27,6 @@ describe('getUserByEmail', function() {
     const userOutput = findUserFromEmail("ser2@example.com", testUsers);
     const expectedOutput = undefined;
     assert.strictEqual(userOutput, expectedOutput);
-  });
-  
+  });  
 });
+
