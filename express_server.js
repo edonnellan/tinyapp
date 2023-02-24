@@ -4,6 +4,8 @@ const app = express();
 const PORT = 8080; //default port 8080
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
+const bcrypt = require("bcryptjs");
+
 
 //Setting ejs engine with view folder
 app.set("view engine", "ejs");
@@ -217,13 +219,15 @@ app.post("/register", (req, res) => {
   };
 
   //3. Every condition checked. Happy Path;
+  const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   const generateUserId = generateRandomString();
   users[generateUserId] = {
     id: generateUserId,
     email: req.body.email,
-    password: req.body.password
+    password: hashedPassword
   };
-  
+  console.log("hashedPW?? ", hashedPassword);
   // console.log("userObj: ", users[generateUserId]);
   res.cookie("userId", generateUserId);
   // console.log("userDatabase: ", users);
@@ -252,15 +256,15 @@ app.post("/login", (req, res) => {
     
   //1. Checks if the iput email exists in users database or not?
   const searchUsersDatabase = findUserFromEmail(req.body.email);
-  console.log("searchUserDB:", searchUsersDatabase);
-  if (searchUsersDatabase === null) {
-    return res.status(403).send("Email is not registered. Please register first and then login.");
-  }
+  console.log("searchUserDB:", searchUsersDatabase); 
+  
   //2. Check if the existing userId's passwords matches the input password or not?
-  if (searchUsersDatabase.password !== req.body.password) {
-  // console.log("searchUsersDatabase.password: ", searchUsersDatabase.password, "req.body.password: ",req.body.password);
+  if (!bcrypt.compareSync(req.body.password, searchUsersDatabase.password)) {
     return res.status(403).send("Passwords are not a match. Please check your password and try again.");
   }
+  // if (searchUsersDatabase.password !== req.body.password) {
+  //   return res.status(403).send("Passwords are not a match. Please check your password and try again.");
+  // }
 
   //3. HappyPath -- If all was well then store the usersId in the userId Cookie and redirect to /urls.
   res.cookie("userId", searchUsersDatabase.id);
