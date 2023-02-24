@@ -2,7 +2,7 @@
 
 TinyApp is a full stack web application built with Node and Express that allows users to shorten long URLs (à la bit.ly).
 
-Ever wanted to send a link to someone that won't take up your whole phone screen? What about trying to post something on social media where you have limited characters? Well, no longer will you be at the peril of ugly lengthy urls in your favourite influencers bio. TinyApp is here to save the day!
+Ever wanted to send a link to someone that won't take up your whole phone screen? What about trying to post something on social media where you have limited characters? Well, no longer will you be at the peril of ugly lengthy urls in your favourite influencer's bio. TinyApp is here to save the day!
 
 ## Final Product
 
