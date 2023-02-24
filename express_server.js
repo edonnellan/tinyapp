@@ -75,6 +75,20 @@ const urlsForUser = (currentUserId) => {
   return userUrls;
 };
 
+const doesTheUserOwnThisUrl = (currentUserId, paramId) => {
+  //1. Getting users URLs
+  const usersUrls = urlsForUser(currentUserId); //returns array of users urls in objects
+ //2. Checking if any of the users TinyURLs match the param.id of the url they're searching
+  for (let url of usersUrls) {
+    if (url.shortURL === paramId) {
+       return true;
+    }
+  }
+  return false;
+};
+
+
+
 
 //Main /urls page. URL list
 app.get("/urls", (req, res) => {
@@ -131,7 +145,7 @@ app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id].longURL;
   //if the TinyURL doesn't exist- error code & HTML prompted with message
   if (!longURL) {
-    return res.status(404).send("<html><body>TinyURL not found. Maybe you could make it? Register and try!</body></html>\n");
+    return res.status(404).send("<html><body>TinyURL not found. Maybe you could make it? Register and try!</body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n</html>\n");
   }
   res.redirect(longURL);
 });
@@ -139,7 +153,16 @@ app.get("/u/:id", (req, res) => {
 //Renders page post tinyURL conversion
 app.get("/urls/:id", (req, res) => {
   const userId = req.cookies.userId;
+  const id = req.params.id;
 
+  if (!users[userId]) {
+      return res.status(404).send("<html><body>Please register and login to access the tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
+    };
+
+  if (doesTheUserOwnThisUrl(userId, id) === false) {
+    return res.status(401).send("<html><body>This isn't your TinyURL. Please register and login to access your very own tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n")
+  };
+    
   const templateVars = {
     user: users[userId],
     id: req.params.id,
@@ -252,6 +275,22 @@ app.post("/logout", (req, res) => {
 
 //Edit the longURL of an existing TinyURL conversion
 app.post("/urls/:id", (req, res) => {
+  const userId = req.cookies.userId;
+  const id = req.params.id;
+  const urlObject = urlDatabase[id];
+
+  if (!urlObject) {
+    return res.status(400).send("<html><body>TinyURL not found. Maybe you could make it?</body></html>\n");
+  }
+
+  if (!users[userId]) {
+    return res.status(404).send("<html><body>Please register and login to access the tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
+  };
+
+  if (doesTheUserOwnThisUrl(userId, id) === false) {
+    return res.status(401).send("<html><body>This TinyURL belongs to someone else. Why not make it yourself!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n")
+  };
+
   console.log(`Updated LongURL: ${req.body.longURL}`)
   urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect("/urls");
@@ -259,8 +298,24 @@ app.post("/urls/:id", (req, res) => {
 
 //Delete a URL
 app.post("/urls/:id/delete", (req, res) => {
-  console.log(`The tinyURL for ${urlDatabase[req.params.id]} has been deleted!`);
-  console.log("ID NOW: ", urlDatabase[req.params.id]);
+  const userId = req.cookies.userId;
+  const id = req.params.id;
+  const urlObject = urlDatabase[id];
+
+    if (!urlObject) {
+      return res.status(400).send("<html><body>TinyURL not found. Maybe you could make it?</body></html>\n");
+    }
+
+  if (!users[userId]) {
+    return res.status(404).send("<html><body>Please register and login to access the tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
+  };
+
+  if (doesTheUserOwnThisUrl(userId, id) === false) {
+    return res.status(401).send("<html><body>This TinyURL belongs to someone else. Please register and login to access your very own tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n")
+  };
+
+  // console.log(`The tinyURL for ${urlDatabase[req.params.id]} has been deleted!`);
+  // console.log("ID NOW: ", urlDatabase[req.params.id]);
   delete urlDatabase[req.params.id];
   res.redirect("/urls");
 });
