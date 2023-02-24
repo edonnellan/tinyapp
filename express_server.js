@@ -20,7 +20,10 @@ app.use(cookieSession({
   keys: ["key1", "key2"],
 }));
 
-//Database objects
+
+//// Database objects ////
+
+
 const urlDatabase = {
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
@@ -47,11 +50,15 @@ const users = {
   },
 };
 
-// //HELPER FUNCTIONS
+
+//// HELPER FUNCTIONS ////
+
+//Generates random string -- userId and TinyURL
 const generateRandomString = () => {
   return Math.random().toString(36).slice(7);
 };
 
+//Returns user object with all of their URLs conversions
 const urlsForUser = (currentUserId) => {
   let userUrls = [];
 
@@ -68,6 +75,7 @@ const urlsForUser = (currentUserId) => {
   return userUrls;
 };
 
+//Checks if a specific URL belongs to a certain user
 const doesTheUserOwnThisUrl = (currentUserId, paramId) => {
   //1. Getting users URLs
   const usersUrls = urlsForUser(currentUserId); //returns array of users urls in objects
@@ -81,43 +89,53 @@ const doesTheUserOwnThisUrl = (currentUserId, paramId) => {
 };
 
 
+//// ROUTES ////
 
 
-//Main /urls page. URL list
+//Main Page (/urls page)
 app.get("/urls", (req, res) => {
   const userId = req.session.userId;
-  // console.log("URLS for userId: ", urlsForUser(userId));
 
+  //1. Checks if user is logged in or not?
   if (!userId) {
     return res.status(401).send("<html><body>You must register and be logged in to see the TinyURLs in all their glory!\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
   }
 
+  //2. Checks if this url conversion is owned by current user or not?
   if (!urlsForUser(userId)) {
     return res.status(401).send("<html><body>You must register and be logged in to see the TinyURLs in all their glory!\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
   }
 
+  //Happy Path :) -- sends templeVars with verified user owned urls to be displayed.
   const templateVars = { 
     urls: urlsForUser(userId),
     user: users[userId]
   };
-  // console.log("templateVarUSER: ", templateVars.urls);
   res.render("urls_index", templateVars);
 });
+
+
 
 //Creates the tinyURL
 app.post("/urls", (req, res) => {
   const userId = req.session.userId;
+
+  //1. Checking if the user is logged in or not
   if (!users[userId]) {
       return res.send("<html><body>Please register and login to access the tinyURL machine!\n<b>Thank you!</b></body></html>\n");
     };
+
+  //2. Happy Path -- Generating the TinyURL
   const tinyURL = generateRandomString();
   urlDatabase[tinyURL] = {};
   urlDatabase[tinyURL].longURL = req.body.longURL;
   urlDatabase[tinyURL].userID = userId;
-  // console.log("urlDB AFter adding url: ", urlDatabase[tinyURL]);
+
   console.log(`A tinyURL for ${urlDatabase[tinyURL].longURL} been created!`);
   res.redirect(`/urls/${tinyURL}`);
 });
+
+
 
 //Renders urls/new page when a new tinyURL has been created
 app.get("/urls/new", (req, res) => {
@@ -126,12 +144,14 @@ app.get("/urls/new", (req, res) => {
     user: users[userId],
   };
 
-  //If user is not logged in they can't make tinyURL...So they get redirected to /login.
+  //If user is not logged in...They get redirected to /login.
   if (!users[userId]) {
     return res.redirect("/login");
   }
   res.render("urls_new", templateVars);
 });
+
+
 
 //TinyURL at work -- Redirects TinyURL to the OG longURL
 app.get("/u/:id", (req, res) => {
@@ -143,43 +163,55 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+
+
 //Renders page post tinyURL conversion
 app.get("/urls/:id", (req, res) => {
   const userId = req.session.userId;
   const id = req.params.id;
 
+  //1. Checks it user is logged in or not?
   if (!users[userId]) {
       return res.status(404).send("<html><body>Please register and login to access the tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
     };
 
+    //2. Checks if current user is the owner of a specific url conversion or not?
   if (doesTheUserOwnThisUrl(userId, id) === false) {
     return res.status(401).send("<html><body>This isn't your TinyURL. Please register and login to access your very own tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n")
   };
     
+  //3. Happy Path :) -- templateVars with user & url info to be displayed after URL conversion
   const templateVars = {
     user: users[userId],
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL,
   };
-  console.log("templateVar.longURL: ", templateVars.longURL);
-  // console.log("LONGURL FIX: ", urlDatabase[req.params.id].longURL, "id: ", req.params.id);
+
   res.render("urls_show", templateVars);
 });
+
+
 
 //Home page
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+
+
 //Hello World page
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+
+
 // /urls.json displays url database
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
+
+
 
 //Renders register page
 app.get("/register", (req, res) => {
@@ -191,8 +223,11 @@ app.get("/register", (req, res) => {
    if (users[userId]) {
     return res.redirect("/urls");
    }
+   //Else send user to register
   res.render("urls_register", templateVars);
 });
+
+
 
 //When a user registers -- We check they've inputted an email & password and that the email doesn't already exist in our database before accepting.
 app.post("/register", (req, res) => {
@@ -204,12 +239,11 @@ app.post("/register", (req, res) => {
 
   //2. Checking whether the email has been registered already or not?
   const searchUsersDatabase = findUserFromEmail(req.body.email, users);
-  // console.log("searchUsersDatabase: ", searchUsersDatabase, "req.body.email: ", req.body.email);
   if (searchUsersDatabase) {
     return res.status(400).send("<html><body>The email has already been taken. Please try it with another one!</body></html>");
   };
 
-  //3. Every condition checked. Happy Path;
+  //3. Every condition checked. Happy Path :) -- Add user info to users database;
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
   const generateUserId = generateRandomString();
@@ -219,15 +253,11 @@ app.post("/register", (req, res) => {
     email: req.body.email,
     password: hashedPassword
   };
-  // console.log("hashedPW?? ", hashedPassword);
-  // console.log("userObj: ", users[generateUserId]);
-  // res.cookie("userId", generateUserId);
-  // console.log("userDatabase: ", users);
+  
   res.redirect("/urls");
 });
 
 
-//LOGIN ROUTES
 
 //Renders /login
 app.get("/login", (req, res) => {
@@ -243,6 +273,8 @@ app.get("/login", (req, res) => {
   res.render("urls_login", templateVars)
 });
 
+
+
 //Login Funtionality
 app.post("/login", (req, res) => {
     
@@ -251,76 +283,83 @@ app.post("/login", (req, res) => {
   if (searchUsersDatabase === undefined) {
     return res.status(404).send("<html><body>Email address not found. Please try again.</body></html>");
   }
-  // console.log("searchUserDB:", searchUsersDatabase); 
   
   //2. Check if the existing userId's passwords matches the input password or not?
   if (!bcrypt.compareSync(req.body.password, searchUsersDatabase.password)) {
     return res.status(403).send("<html><body>Passwords are not a match. Please check your password and try again.</body></html>");
   }
-  // if (searchUsersDatabase.password !== req.body.password) {
-  //   return res.status(403).send("Passwords are not a match. Please check your password and try again.");
-  // }
 
   //3. HappyPath -- If all was well then store the usersId in the userId Cookie and redirect to /urls.
   req.session.userId = searchUsersDatabase.id;
-  // res.cookie("userId", searchUsersDatabase.id);
   res.redirect("/urls");
 });
 
+
+
 //LOGOUT
 app.post("/logout", (req, res) => {
-  console.log("HELLOOOO!");
   req.session = null; // Destroying the session
-  // res.clearCookie("userId", req.session.userId);
   res.redirect("/login");
 });
+
+
 
 //Edit the longURL of an existing TinyURL conversion
 app.post("/urls/:id", (req, res) => {
   const userId = req.session.userId;
   const id = req.params.id;
-  const urlObject = urlDatabase[id];
-
-  if (!urlObject) {
+  const userUrlObject = urlDatabase[id];
+  
+  //1. If TinyURL doesn't exist in database
+  if (!userUrlObject) {
     return res.status(400).send("<html><body>TinyURL not found. Maybe you could make it?</body></html>\n");
   }
 
+  //2. If user isn't logged in -- direct them to reg || login
   if (!users[userId]) {
     return res.status(404).send("<html><body>Please register and login to access the tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
   };
 
+  //3. Checks if the current user own the conversion they're searching or not?
   if (doesTheUserOwnThisUrl(userId, id) === false) {
     return res.status(401).send("<html><body>This TinyURL belongs to someone else. Why not make it yourself!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n")
   };
 
+  //4. Happy Path :) -- longURL has been updated in the database by the owner user
   console.log(`Updated LongURL: ${req.body.longURL}`)
   urlDatabase[req.params.id].longURL = req.body.longURL;
   res.redirect("/urls");
 });
 
+
+
 //Delete a URL
 app.post("/urls/:id/delete", (req, res) => {
   const userId = req.session.userId;
   const id = req.params.id;
-  const urlObject = urlDatabase[id];
+  const userUrlObject = urlDatabase[id];
 
-    if (!urlObject) {
+    //1. If TinyURL doesn't exist in database
+    if (!userUrlObject) {
       return res.status(400).send("<html><body>TinyURL not found. Maybe you could make it?</body></html>\n");
     }
+  
+    //2. If user isn't logged in -- direct them to reg || login
+    if (!users[userId]) {
+      return res.status(404).send("<html><body>Please register and login to access the tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
+    };
 
-  if (!users[userId]) {
-    return res.status(404).send("<html><body>Please register and login to access the tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
-  };
+    //3. Checks if the current user own the conversion they're searching or not?
+    if (doesTheUserOwnThisUrl(userId, id) === false) {
+      return res.status(401).send("<html><body>This TinyURL belongs to someone else. Please register and login to access your very own tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n")
+    };
 
-  if (doesTheUserOwnThisUrl(userId, id) === false) {
-    return res.status(401).send("<html><body>This TinyURL belongs to someone else. Please register and login to access your very own tinyURLs!\n<b>Thank you!</b></body>\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n")
-  };
-
-  // console.log(`The tinyURL for ${urlDatabase[req.params.id]} has been deleted!`);
-  // console.log("ID NOW: ", urlDatabase[req.params.id]);
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls");
+    //Happy Path :) -- User is verified and it is their url. It can be deleted from database
+    delete urlDatabase[req.params.id];
+    res.redirect("/urls");
 });
+
+
 
 //Server listening
 app.listen(PORT, () => {
