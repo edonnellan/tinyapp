@@ -2,7 +2,7 @@ const { urlencoded } = require("express");
 const express = require("express");
 const app = express();
 const PORT = 8080; //default port 8080
-const cookieParser = require("cookie-parser");
+var cookieSession = require('cookie-session');
 const morgan = require("morgan");
 const bcrypt = require("bcryptjs");
 
@@ -12,8 +12,12 @@ app.set("view engine", "ejs");
 
 //Middleware
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(morgan("dev"));
+
+app.use(cookieSession({
+  name: 'CookieSesh',
+  keys: ["key1", "key2"],
+}));
 
 //Database objects
 const urlDatabase = {
@@ -26,10 +30,6 @@ const urlDatabase = {
     userID: "aJ48lW",
   },
 };
-// const urlDatabase = {
-//   b2xVn2: "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com",
-// };
 
 console.log("urlDB: ", urlDatabase);
 
@@ -94,7 +94,7 @@ const doesTheUserOwnThisUrl = (currentUserId, paramId) => {
 
 //Main /urls page. URL list
 app.get("/urls", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
   console.log("URLS for userId: ", urlsForUser(userId));
 
   if (!userId) {
@@ -115,7 +115,7 @@ app.get("/urls", (req, res) => {
 
 //Creates the tinyURL
 app.post("/urls", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
   if (!users[userId]) {
       return res.send("<html><body>Please register and login to access the tinyURL machine!\n<b>Thank you!</b></body></html>\n");
     };
@@ -130,7 +130,7 @@ app.post("/urls", (req, res) => {
 
 //Renders urls/new page when a new tinyURL has been created
 app.get("/urls/new", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
   const templateVars = {
     user: users[userId],
   };
@@ -154,7 +154,7 @@ app.get("/u/:id", (req, res) => {
 
 //Renders page post tinyURL conversion
 app.get("/urls/:id", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
   const id = req.params.id;
 
   if (!users[userId]) {
@@ -192,7 +192,7 @@ app.get("/urls.json", (req, res) => {
 
 //Renders register page
 app.get("/register", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
   const templateVars = {
     user: users[userId]
    };
@@ -222,14 +222,15 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
   const generateUserId = generateRandomString();
+  req.session.userId = generateUserId;
   users[generateUserId] = {
     id: generateUserId,
     email: req.body.email,
     password: hashedPassword
   };
-  console.log("hashedPW?? ", hashedPassword);
+  // console.log("hashedPW?? ", hashedPassword);
   // console.log("userObj: ", users[generateUserId]);
-  res.cookie("userId", generateUserId);
+  // res.cookie("userId", generateUserId);
   // console.log("userDatabase: ", users);
   res.redirect("/urls");
 });
@@ -239,7 +240,7 @@ app.post("/register", (req, res) => {
 
 //Renders /login
 app.get("/login", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
   const templateVars = {
     user: users[userId]
    }
@@ -254,7 +255,7 @@ app.get("/login", (req, res) => {
 //Login Funtionality
 app.post("/login", (req, res) => {
     
-  //1. Checks if the iput email exists in users database or not?
+  //1. Checks if the input email exists in users database or not?
   const searchUsersDatabase = findUserFromEmail(req.body.email);
   console.log("searchUserDB:", searchUsersDatabase); 
   
@@ -267,19 +268,20 @@ app.post("/login", (req, res) => {
   // }
 
   //3. HappyPath -- If all was well then store the usersId in the userId Cookie and redirect to /urls.
-  res.cookie("userId", searchUsersDatabase.id);
+  req.session.userId = searchUsersDatabase.id;
+  // res.cookie("userId", searchUsersDatabase.id);
   res.redirect("/urls");
 });
 
 //LOGOUT
 app.post("/logout", (req, res) => {
-  res.clearCookie("userId", req.cookies.userId);
+  // res.clearCookie("userId", req.session.userId);
   res.redirect("/login");
 });
 
 //Edit the longURL of an existing TinyURL conversion
 app.post("/urls/:id", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
   const id = req.params.id;
   const urlObject = urlDatabase[id];
 
@@ -302,7 +304,7 @@ app.post("/urls/:id", (req, res) => {
 
 //Delete a URL
 app.post("/urls/:id/delete", (req, res) => {
-  const userId = req.cookies.userId;
+  const userId = req.session.userId;
   const id = req.params.id;
   const urlObject = urlDatabase[id];
 
