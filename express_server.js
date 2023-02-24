@@ -1,3 +1,4 @@
+const { findUserFromEmail } = require("./helpers");
 const { urlencoded } = require("express");
 const express = require("express");
 const app = express();
@@ -51,16 +52,6 @@ const generateRandomString = () => {
   return Math.random().toString(36).slice(7);
 };
 
-const findUserFromEmail = (emailAddress) => {
-  for (let user in users) {
-    if (users[user].email === emailAddress) {
-      // console.log("users: ", users);
-      return users[user];
-    }
-  }
-  return null;
-};
-
 const urlsForUser = (currentUserId) => {
   let userUrls = [];
 
@@ -73,7 +64,7 @@ const urlsForUser = (currentUserId) => {
       });
     }
   }
-  console.log("userURLS: ", userUrls);
+  // console.log("userURLS: ", userUrls);
   return userUrls;
 };
 
@@ -95,7 +86,7 @@ const doesTheUserOwnThisUrl = (currentUserId, paramId) => {
 //Main /urls page. URL list
 app.get("/urls", (req, res) => {
   const userId = req.session.userId;
-  console.log("URLS for userId: ", urlsForUser(userId));
+  // console.log("URLS for userId: ", urlsForUser(userId));
 
   if (!userId) {
     return res.status(401).send("<html><body>You must register and be logged in to see the TinyURLs in all their glory!\n<a href=/login <h3>Login Here!</h3></a>\n<a href=/register <h3>Register Here!</h3></body></html>\n");
@@ -109,7 +100,7 @@ app.get("/urls", (req, res) => {
     urls: urlsForUser(userId),
     user: users[userId]
   };
-  console.log("templateVarUSER: ", templateVars.urls);
+  // console.log("templateVarUSER: ", templateVars.urls);
   res.render("urls_index", templateVars);
 });
 
@@ -123,7 +114,7 @@ app.post("/urls", (req, res) => {
   urlDatabase[tinyURL] = {};
   urlDatabase[tinyURL].longURL = req.body.longURL;
   urlDatabase[tinyURL].userID = userId;
-  console.log("urlDB AFter adding url: ", urlDatabase[tinyURL]);
+  // console.log("urlDB AFter adding url: ", urlDatabase[tinyURL]);
   console.log(`A tinyURL for ${urlDatabase[tinyURL].longURL} been created!`);
   res.redirect(`/urls/${tinyURL}`);
 });
@@ -208,14 +199,14 @@ app.post("/register", (req, res) => {
    
   //1. Checking the email or password are empty or not?
   if (!req.body.email || !req.body.password) {
-    return res.status(400).send("Please provide email AND Password. It can't be blank!");
+    return res.status(400).send("<html><body>Please provide email AND Password. It can't be blank!</body></html>");
   };
 
   //2. Checking whether the email has been registered already or not?
-  const searchUsersDatabase = findUserFromEmail(req.body.email);
+  const searchUsersDatabase = findUserFromEmail(req.body.email, users);
   // console.log("searchUsersDatabase: ", searchUsersDatabase, "req.body.email: ", req.body.email);
   if (searchUsersDatabase) {
-    return res.status(400).send("The email has already been taken. Please try it with another one!");
+    return res.status(400).send("<html><body>The email has already been taken. Please try it with another one!</body></html>");
   };
 
   //3. Every condition checked. Happy Path;
@@ -256,12 +247,15 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
     
   //1. Checks if the input email exists in users database or not?
-  const searchUsersDatabase = findUserFromEmail(req.body.email);
-  console.log("searchUserDB:", searchUsersDatabase); 
+  const searchUsersDatabase = findUserFromEmail(req.body.email, users);
+  if (searchUsersDatabase === null) {
+    return res.status(404).send("<html><body>Email address not found. Please try again.</body></html>");
+  }
+  // console.log("searchUserDB:", searchUsersDatabase); 
   
   //2. Check if the existing userId's passwords matches the input password or not?
   if (!bcrypt.compareSync(req.body.password, searchUsersDatabase.password)) {
-    return res.status(403).send("Passwords are not a match. Please check your password and try again.");
+    return res.status(403).send("<html><body>Passwords are not a match. Please check your password and try again.</body></html>");
   }
   // if (searchUsersDatabase.password !== req.body.password) {
   //   return res.status(403).send("Passwords are not a match. Please check your password and try again.");
@@ -275,6 +269,8 @@ app.post("/login", (req, res) => {
 
 //LOGOUT
 app.post("/logout", (req, res) => {
+  console.log("HELLOOOO!");
+  req.session = null; // Destroying the session
   // res.clearCookie("userId", req.session.userId);
   res.redirect("/login");
 });
