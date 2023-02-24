@@ -5,7 +5,7 @@ const findUserFromEmail = (emailAddress, userDatabase) => {
       return userDatabase[user];
     }
   }
-  return null;
+  return undefined;
 };
 
 

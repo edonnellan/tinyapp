@@ -248,7 +248,7 @@ app.post("/login", (req, res) => {
     
   //1. Checks if the input email exists in users database or not?
   const searchUsersDatabase = findUserFromEmail(req.body.email, users);
-  if (searchUsersDatabase === null) {
+  if (searchUsersDatabase === undefined) {
     return res.status(404).send("<html><body>Email address not found. Please try again.</body></html>");
   }
   // console.log("searchUserDB:", searchUsersDatabase); 
